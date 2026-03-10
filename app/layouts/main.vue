@@ -22,10 +22,6 @@ const items = computed<NavigationMenuItem[]>(() => [
     target: '_blank'
   },
   {
-    label: 'Resume',
-    to: '#resume',
-  },
-  {
     label: 'Contact',
     to: '#contact',
   },
@@ -35,14 +31,14 @@ const items = computed<NavigationMenuItem[]>(() => [
 <template>
   <UHeader>
     <template #title>
-      <h1 class="h-6 text-xl">VALCODE</h1>
+      <h1 class="text-xl font-bold tracking-wide">VALCODE</h1>
     </template>
 
+    <!-- Desktop nav (center slot, hidden on mobile by default) -->
     <UNavigationMenu :items="items" />
 
     <template #right>
       <UColorModeButton />
-
       <UTooltip text="Open on GitHub" :kbds="['meta', 'G']">
         <UButton
           color="neutral"
@@ -54,13 +50,21 @@ const items = computed<NavigationMenuItem[]>(() => [
         />
       </UTooltip>
     </template>
+
+    <!-- Mobile nav (shown inside the toggle menu) -->
+    <template #body>
+      <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
+    </template>
   </UHeader>
-    <slot/>
+
+  <slot />
+
   <UFooter class="mt-10">
     <template #left>
-      <p class="text-muted text-sm">Copyright © {{ new Date().getFullYear() }}</p>
+      <p class="text-muted text-sm">
+        Copyright © {{ new Date().getFullYear() }}
+      </p>
     </template>
-
     <template #right>
       <UButton
         icon="i-simple-icons-discord"

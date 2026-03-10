@@ -1,17 +1,15 @@
 <template>
-    <div class="flex flex-col mt-10">
-        <div>
-            <UPageHeader
-                title="Technical Skills"
-                :ui="{
-                    root: 'border-b-0',
-                    title: 'mx-auto'
-                }" 
-            />
-        </div>
-        <div class="flex flex-row flex-wrap gap-6 justify-center">
-            <MainSkillCard />
-            <MainSkillCard />
-        </div>
+  <div id="skills" class="flex flex-col mt-10">
+    <UPageHeader
+      title="Technical Skills"
+      :ui="{
+        root: 'border-b-0',
+        title: 'mx-auto'
+      }"
+    />
+    <div class="flex flex-wrap justify-center gap-6">
+      <MainSkillCard />
+      <MainSkillCard />
     </div>
+  </div>
 </template>
