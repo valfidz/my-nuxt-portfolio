@@ -1,3 +1,9 @@
+<script setup lang="ts">
+const props = defineProps({
+  link: String
+})
+</script>
+
 <template>
   <div class="flex flex-col sm:flex-row gap-4 w-full max-w-3xl">
     <UCard class="w-full sm:w-1/2">
@@ -51,7 +57,7 @@
           icon="i-lucide-download"
           color="neutral"
           size="lg"
-          to="https://bit.ly/CV-Softdev"
+          :to="props.link"
           target="_blank"
           class="w-full justify-center mt-auto"
         >

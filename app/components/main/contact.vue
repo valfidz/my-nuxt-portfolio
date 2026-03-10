@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const link = 'https://bit.ly/CV-Softdev"'
+</script>
+
 <template>
   <div id="contact" class="flex flex-col mt-10">
     <UPageHeader
@@ -11,7 +15,9 @@
       <p class="text-center text-muted max-w-xl">
         I'm always interested in discussing new opportunities, collaborating on projects, or simply talking about technology.
       </p>
-      <MainContactCard />
+      <MainContactCard
+        :link="link"
+      />
     </div>
   </div>
 </template>
