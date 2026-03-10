@@ -1,0 +1,17 @@
+<template>
+    <div class="flex flex-col mt-10">
+        <div>
+            <UPageHeader
+                title="Latest Blog Posts"
+                :ui="{
+                    root: 'border-b-0',
+                    title: 'mx-auto'
+                }" 
+            />
+        </div>
+        <div class="flex flex-col gap-6 justify-center items-center">
+            <MainBlogCard />
+            <MainBlogCard />
+        </div>
+    </div>
+</template>
