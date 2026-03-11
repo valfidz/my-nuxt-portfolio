@@ -2,6 +2,7 @@
 const blogs = [
   {
     title: 'Building Scalable APIs with Node.js and PostgreSQL',
+    slug: 'building-scalable-apis-with-nodejs-and-postgresql',
     information: 'March 15, 2025 • 8 min read',
     description: `Learn best practices for designing and implementing scalable REST APIs using Node.js, Express, and PostgreSQL. We'll cover database design, caching strategies, and performance optimization.`
   }
