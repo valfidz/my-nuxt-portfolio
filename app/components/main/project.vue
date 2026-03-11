@@ -16,13 +16,31 @@ const projects = [
   {
     title: 'Pipopa Landing Page',
     stacks: [
-      'Node.js',
       'Javascript',
       'React.js',
+    ],
+    description: 'Landing page for Pipopa company profile built by React.js',
+    link: 'https://github.com/valfidz/pipopa-fe/tree/production'
+  },
+  {
+    title: 'Pipopa Dashboard',
+    stacks: [
+      'Javascript',
+      'React.js',
+    ],
+    description: 'Dashboard for Pipopa company profile built by React.js',
+    link: 'https://github.com/valfidz/admin-compro-cra-pipopa/tree/production'
+  },
+  {
+    title: 'Pipopa Backend',
+    stacks: [
+      'Javascript',
+      'Node.js',
+      'Express.js',
       'MySQL'
     ],
-    description: 'Landing page for Pipopa company profile',
-    link: 'https://github.com/valfidz/pipopa-fe/tree/production'
+    description: 'Backend API for Pipopa company profile built by Express.js and MySQL',
+    link: 'https://github.com/valfidz/pipopa-be/tree/production'
   },
 ]
 </script>
