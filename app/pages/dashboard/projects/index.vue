@@ -6,6 +6,7 @@ definePageMeta({
 })
 
 type Projects = {
+    id: string,
     title: string
     stacks: string[]
     description: string
@@ -14,6 +15,7 @@ type Projects = {
 
 const projects = ref<Projects[]> ([
   {
+    id: '1',
     title: 'Simple World Map',
     stacks: [
       'Bun',
@@ -27,6 +29,7 @@ const projects = ref<Projects[]> ([
     link: 'https://github.com/valfidz/geo-map'
   },
   {
+    id: '2',
     title: 'Pipopa Landing Page',
     stacks: [
       'Javascript',
@@ -36,6 +39,7 @@ const projects = ref<Projects[]> ([
     link: 'https://github.com/valfidz/pipopa-fe/tree/production'
   },
   {
+    id: '3',
     title: 'Pipopa Dashboard',
     stacks: [
       'Javascript',
@@ -45,6 +49,7 @@ const projects = ref<Projects[]> ([
     link: 'https://github.com/valfidz/admin-compro-cra-pipopa/tree/production'
   },
   {
+    id: '4',
     title: 'Pipopa Backend',
     stacks: [
       'Javascript',
@@ -71,6 +76,17 @@ const columns: TableColumn<Projects>[] = [
         header: 'Actions'
     }
 ]
+
+const toEdit = async (id: string) => {
+    await navigateTo(`/dashboard/projects/${id}/edit`)
+}
+
+const toast = useToast()
+
+const deleteItem = async (id: string) => {
+    toast.add({ title: 'Success', description: 'Item deleted successfully', color: 'success' })
+    console.log("Deleted id: ", id)
+}
 
 </script>
 
@@ -107,7 +123,7 @@ const columns: TableColumn<Projects>[] = [
                     <p>{{ row.original.description }}</p>
                 </template>
 
-                <template #action-cell>
+                <template #action-cell="{ row }">
                     <div class="flex flex-row gap-4">
                         <UButton
                             label="Edit"
@@ -115,12 +131,14 @@ const columns: TableColumn<Projects>[] = [
                             variant="outline"
                             icon="i-lucide-square-pen"
                             size="sm"
+                            @click="toEdit(row.original.id)"
                         />
                         <UButton
                             label="Delete"
                             color="error"
                             icon="i-lucide-trash-2"
                             size="sm"
+                            @click="deleteItem(row.original.id)"
                         />
                     </div>
                 </template>

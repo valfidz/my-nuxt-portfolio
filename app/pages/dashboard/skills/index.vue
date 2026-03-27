@@ -6,12 +6,14 @@ definePageMeta({
 })
 
 type Skills = {
+    id: string,
     title: string
     stacks: string[]
 }
 
 const skills = ref<Skills[]>([
   {
+    id: '1',
     title: 'Backend Development',
     stacks: [
       'Node.js',
@@ -25,6 +27,7 @@ const skills = ref<Skills[]>([
     ]
   },
   {
+    id: '2',
     title: 'Frontend Development',
     stacks: [
       'HTML',
@@ -36,6 +39,7 @@ const skills = ref<Skills[]>([
     ]
   },
   {
+    id: '3',
     title: 'Tools & Technologies',
     stacks: [
       'Git',
@@ -47,6 +51,7 @@ const skills = ref<Skills[]>([
     ]
   },
   {
+    id: '4',
     title: 'Soft Skills',
     stacks: [
       'Problem Solving',
@@ -76,6 +81,17 @@ const formatArray = (item: string[]) => {
   const stack = item.join(', ')
 
   return stack
+}
+
+const toEdit = async (id: string) => {
+  await navigateTo(`/dashboard/skills/${id}/edit`)
+}
+
+const toast = useToast()
+
+const deleteItem = async (id: string) => {
+    toast.add({ title: 'Success', description: 'Item deleted successfully', color: 'success' })
+    console.log("Deleted id: ", id)
 }
 </script>
 
@@ -112,7 +128,7 @@ const formatArray = (item: string[]) => {
               <p>{{ formatArray(row.original.stacks) }}</p>
             </template>
 
-            <template #action-cell>
+            <template #action-cell="{ row }">
                 <div class="flex flex-row gap-4">
                     <UButton
                         label="Edit"
@@ -120,12 +136,14 @@ const formatArray = (item: string[]) => {
                         variant="outline"
                         icon="i-lucide-square-pen"
                         size="sm"
+                        @click="toEdit(row.original.id)"
                     />
                     <UButton
                         label="Delete"
                         color="error"
                         icon="i-lucide-trash-2"
                         size="sm"
+                        @click="deleteItem(row.original.id)"
                     />
                 </div>
             </template>
