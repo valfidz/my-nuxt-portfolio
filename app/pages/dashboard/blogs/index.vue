@@ -8,18 +8,22 @@ definePageMeta({
 type Blogs = {
     title: string
     description: string
-    status: 'Published' | 'Draft'
+    content: string
+    slug: string
+    status: 'published' | 'draft'
     date: string
-    to: string
 }
+
+const toast = useToast()
 
 const posts = ref<Blogs[]>([
   {
     title: 'Building Scalable APIs with Node.js and PostgreSQL',
+    slug: 'building-scalable-apis-with-nodejs-and-postgresql',
     description: `Learn best practices for designing and implementing scalable REST APIs using Node.js, Express, and PostgreSQL. We'll cover database design, caching strategies, and performance optimization.`,
-    status: 'Published',
+    content: 'Lorem ipsum dolor sit amet',
+    status: 'published',
     date: '2026-03-11',
-    to: '/blog/building-scalable-apis-with-nodejs-and-postgreqsql'
   },
 ])
 
@@ -50,6 +54,21 @@ const columns: TableColumn<Blogs>[] = [
         header: 'Action'
     }
 ]
+
+const capitalize = (word: string) => {
+    if (!word) return word
+
+    return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
+const toEdit = async (slug: string) => {
+    await navigateTo(`/dashboard/blogs/${slug}/edit`)
+}
+
+const deleteItem = async (slug: string) => {
+    toast.add({ title: 'Success', description: 'Item deleted successfully', color: 'success' })
+    console.log("Deleted post: ", slug)
+}
 </script>
 
 <template>
@@ -87,16 +106,17 @@ const columns: TableColumn<Blogs>[] = [
 
                 <template #status-cell="{ row }">
                     <UBadge
-                        :label="row.original.status"
-                        :color="row.original.status === 'Published' ? 'info' : 'warning'"
-                    />
+                        :color="row.original.status === 'published' ? 'info' : 'warning'"
+                    >
+                        {{ capitalize(row.original.status) }}
+                    </UBadge>
                 </template>
 
                 <template #date-cell="{ row }">
                     <p>{{ row.original.date }}</p>
                 </template>
 
-                <template #action-cell>
+                <template #action-cell="{ row }">
                     <div class="flex flex-row gap-4">
                         <UButton
                             label="Edit"
@@ -104,12 +124,14 @@ const columns: TableColumn<Blogs>[] = [
                             variant="outline"
                             icon="i-lucide-square-pen"
                             size="sm"
+                            @click="toEdit(row.original.slug)"
                         />
                         <UButton
                             label="Delete"
                             color="error"
                             icon="i-lucide-trash-2"
                             size="sm"
+                            @click="deleteItem(row.original.slug)"
                         />
                     </div>
                 </template>
