@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { marked } from 'marked'
 import type { ContentTocLink } from '@nuxt/ui'
 
 definePageMeta({
@@ -27,37 +28,66 @@ const formattedDate = computed(() => {
 })
 
 /**
- * Add id attributes to h2/h3 tags in HTML and extract TOC links.
+ * Extract headings from content — supports both HTML (from editor) and markdown (seed data).
  */
-function processHtmlHeadings(html: string): { html: string; links: ContentTocLink[] } {
+function extractHeadings(content: string): { html: string; links: ContentTocLink[] } {
   const links: ContentTocLink[] = []
 
-  const result = html.replace(
-    /<h([23])\b([^>]*)>(.*?)<\/h\1>/gi,
-    (_match, level: string, attrs: string, inner: string) => {
-      // Strip any inner HTML tags for the id
-      const text = inner.replace(/<[^>]*>/g, '')
-      const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+  // Try HTML headings first
+  const hasHtmlHeadings = /<h[23]/i.test(content)
 
-      const link: ContentTocLink = {
-        id,
-        text,
-        depth: parseInt(level) as 2 | 3,
-      }
+  if (hasHtmlHeadings) {
+    // Process HTML — add IDs to headings + extract TOC links
+    const result = content.replace(
+      /<h([23])\b([^>]*)>(.*?)<\/h\1>/gi,
+      (_match, level: string, attrs: string, inner: string) => {
+        const text = inner.replace(/<[^>]*>/g, '')
+        const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
 
-      if (link.depth === 2) {
-        links.push(link)
-      } else if (link.depth === 3) {
-        const parent = links[links.length - 1]
-        if (parent) {
+        const link: ContentTocLink = {
+          id,
+          text,
+          depth: parseInt(level) as 2 | 3,
+        }
+
+        if (link.depth === 2) {
+          links.push(link)
+        } else if (link.depth === 3 && links.length) {
+          const parent = links[links.length - 1]
           if (!parent.children) parent.children = []
           parent.children.push(link)
         }
+
+        return `<h${level}${attrs} id="${id}">${inner}</h${level}>`
+      }
+    )
+    return { html: result, links }
+  }
+
+  // Fallback: parse markdown headings with marked
+  const tokens = marked.lexer(content)
+  let result = content
+
+  for (const token of tokens) {
+    if (token.type === 'heading' && (token.depth === 2 || token.depth === 3)) {
+      const id = token.text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+
+      const link: ContentTocLink = { id, text: token.text, depth: token.depth as 2 | 3 }
+
+      if (link.depth === 2) {
+        links.push(link)
+      } else if (link.depth === 3 && links.length) {
+        const parent = links[links.length - 1]
+        if (!parent.children) parent.children = []
+        parent.children.push(link)
       }
 
-      return `<h${level}${attrs} id="${id}">${inner}</h${level}>`
+      // Add id attribute to rendered heading
+      const headingTag = `<h${token.depth}>`
+      const replacement = `<h${token.depth} id="${id}">`
+      result = result.replace(headingTag, replacement)
     }
-  )
+  }
 
   return { html: result, links }
 }
@@ -65,7 +95,11 @@ function processHtmlHeadings(html: string): { html: string; links: ContentTocLin
 const processed = computed(() => {
   const content = post.value?.content
   if (!content) return { html: '', links: [] as ContentTocLink[] }
-  return processHtmlHeadings(content)
+
+  // First, render through marked (handles both markdown and HTML pass-through)
+  const rendered = marked(content)
+  // Then extract headings from the rendered HTML
+  return extractHeadings(rendered)
 })
 
 const parsedContent = computed(() => processed.value.html)
