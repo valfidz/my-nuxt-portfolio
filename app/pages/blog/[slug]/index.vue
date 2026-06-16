@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { marked } from 'marked'
 import type { ContentTocLink } from '@nuxt/ui'
 
 definePageMeta({
@@ -27,53 +26,50 @@ const formattedDate = computed(() => {
     })
 })
 
-const renderer = new marked.Renderer()
-renderer.heading = ({ text, depth }: { text: string, depth: number }) => {
-  const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
-  return `<h${depth} id="${id}">${text}</h${depth}>`
-}
-marked.use({ renderer })
-
-const parsedContent = computed(() => {
-  const content = post.value?.content
-  if (!content) return ''
-  return marked(content)
-})
-
-const tocLinks = computed<ContentTocLink[]>(() => {
-  const content = post.value?.content
-  if (!content) return []
-
-  const tokens = marked.lexer(content)
+/**
+ * Add id attributes to h2/h3 tags in HTML and extract TOC links.
+ */
+function processHtmlHeadings(html: string): { html: string; links: ContentTocLink[] } {
   const links: ContentTocLink[] = []
 
-  for (const token of tokens) {
-    if (token.type === 'heading') {
-      const id = token.text
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
+  const result = html.replace(
+    /<h([23])\b([^>]*)>(.*?)<\/h\1>/gi,
+    (_match, level: string, attrs: string, inner: string) => {
+      // Strip any inner HTML tags for the id
+      const text = inner.replace(/<[^>]*>/g, '')
+      const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
 
       const link: ContentTocLink = {
         id,
-        text: token.text,
-        depth: token.depth,
+        text,
+        depth: parseInt(level) as 2 | 3,
       }
 
-      if (token.depth === 2) {
+      if (link.depth === 2) {
         links.push(link)
-      } else if (token.depth === 3) {
+      } else if (link.depth === 3) {
         const parent = links[links.length - 1]
         if (parent) {
           if (!parent.children) parent.children = []
           parent.children.push(link)
         }
       }
-    }
-  }
 
-  return links
+      return `<h${level}${attrs} id="${id}">${inner}</h${level}>`
+    }
+  )
+
+  return { html: result, links }
+}
+
+const processed = computed(() => {
+  const content = post.value?.content
+  if (!content) return { html: '', links: [] as ContentTocLink[] }
+  return processHtmlHeadings(content)
 })
+
+const parsedContent = computed(() => processed.value.html)
+const tocLinks = computed(() => processed.value.links)
 
 const tocOpen = ref(false)
 </script>

@@ -54,36 +54,26 @@ const editorItems = [
           label: 'Heading 4'
         }
       ]
-    }
+    },
+    { kind: 'paragraph', icon: 'i-lucide-type', label: 'Paragraph' },
   ],
   [
-    {
-      kind: 'mark',
-      mark: 'bold',
-      icon: 'i-lucide-bold'
-    },
-    {
-      kind: 'mark',
-      mark: 'italic',
-      icon: 'i-lucide-italic'
-    },
-    {
-      kind: 'mark',
-      mark: 'underline',
-      icon: 'i-lucide-underline'
-    },
-    {
-      kind: 'mark',
-      mark: 'strike',
-      icon: 'i-lucide-strikethrough'
-    },
-    {
-      kind: 'mark',
-      mark: 'code',
-      icon: 'i-lucide-code'
-    }
+    { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold' },
+    { kind: 'mark', mark: 'italic', icon: 'i-lucide-italic' },
+    { kind: 'mark', mark: 'underline', icon: 'i-lucide-underline' },
+    { kind: 'mark', mark: 'strike', icon: 'i-lucide-strikethrough' },
+    { kind: 'mark', mark: 'code', icon: 'i-lucide-code' },
   ],
   [
+    { kind: 'codeBlock', icon: 'i-lucide-file-code-2', label: 'Code Block' },
+    { kind: 'blockquote', icon: 'i-lucide-text-quote', label: 'Quote' },
+  ],
+  [
+    { kind: 'bulletList', icon: 'i-lucide-list', label: 'Bullet List' },
+    { kind: 'orderedList', icon: 'i-lucide-list-ordered', label: 'Numbered List' },
+  ],
+  [
+    { kind: 'horizontalRule', icon: 'i-lucide-minus', label: 'Divider' },
     {
         icon: 'i-lucide-align-justify',
         tooltip: { text: 'Text Align' },
@@ -256,6 +246,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
                           v-slot="{ editor }"
                           v-model="state.content"
                           content-type="html"
+                          placeholder="Type / for commands, or use the toolbar above"
                           :extensions="[
                               TextAlign.configure({
                                   types: ['heading', 'paragraph']
@@ -269,6 +260,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
                               :items="editorItems"
                               class="border-b border-muted py-2 px-8 sm:px-16 overflow-x-auto bg-muted/20 sticky top-0 z-10"
                           />
+                          <UEditorDragHandle :editor="editor" />
                       </UEditor>
                     </div>
                 </UFormField>
