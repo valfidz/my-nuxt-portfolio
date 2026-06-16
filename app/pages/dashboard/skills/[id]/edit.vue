@@ -7,8 +7,11 @@ definePageMeta({
 })
 
 const route = useRoute()
+const skillId = route.params.id as string
 
-const skillId = route.params.id ? route.params.id : '0'
+const { data: skill } = await useFetch<{
+  id: string, title: string, stacks: string[]
+}>(`/api/skills/${skillId}`)
 
 const schema = z.object({
     title: z.string(),
@@ -23,78 +26,35 @@ type Skills = {
 
 type Schema = z.output<typeof schema>
 
-const skills = ref<Skills[]>([
-  {
-    id: '1',
-    title: 'Backend Development',
-    stacks: [
-      'Node.js',
-      'Express.js',
-      'PostgreSQL',
-      'Laravel',
-      'Redis',
-      'Docker',
-      'Supabase',
-      'Google Cloud Platform'
-    ]
-  },
-  {
-    id: '2',
-    title: 'Frontend Development',
-    stacks: [
-      'HTML',
-      'CSS',
-      'Javascript',
-      'React.js',
-      'Vue.js',
-      'Nuxt.js'
-    ]
-  },
-  {
-    id: '3',
-    title: 'Tools & Technologies',
-    stacks: [
-      'Git',
-      'Linux',
-      'CI/CD',
-      'Microservices',
-      'Rest APIs',
-      'Testing'
-    ]
-  },
-  {
-    id: '4',
-    title: 'Soft Skills',
-    stacks: [
-      'Problem Solving',
-      'Team Collaboration',
-      'Code Review',
-      'Agile Development'
-    ]
-  }
-])
-
-const currentSkill = skills.value.filter(skill => skill.id === skillId)
-
 const state = reactive<Partial<Schema>>({
-    title: currentSkill[0]?.title,
-    stacks: currentSkill[0]?.stacks
+    title: skill.value?.title,
+    stacks: skill.value?.stacks
 })
 
 const toast = useToast()
+const loading = ref(false)
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-    toast.add({ title: 'Success', description: 'Form has been submitted', color: 'success' })
-    console.log(event.data)
-
+  loading.value = true
+  try {
+    await $fetch(`/api/skills/${skillId}`, {
+      method: 'PUT',
+      body: event.data
+    })
+    toast.add({ title: 'Success', description: 'Skill updated successfully', color: 'success' })
     await navigateTo('/dashboard/skills')
+  } catch (err: any) {
+    toast.add({ title: 'Failed', description: err.message || 'Something went wrong', color: 'error' })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
     <UContainer>
         <UButton
-            label="Back to Projects"
+            label="Back to Skills"
             icon="i-lucide-arrow-left"
             color="neutral"
             variant="ghost"
@@ -112,7 +72,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
             }"
         />
 
-        <UCard class="mb-20">
+        <UCard class="mb-20" v-if="skill">
             <UForm
                 :schema="schema"
                 :state="state"
@@ -140,6 +100,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
                     class="max-w-20 justify-center"
                     color="neutral"
                     size="xl"
+                    :loading="loading"
                 >
                     Submit
                 </UButton>

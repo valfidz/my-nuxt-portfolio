@@ -1,13 +1,16 @@
 <script setup lang="ts">
-const paragraphs = [
-  `Hi, I'm Naufal Hafizh Nugraha, a fullstack developer based in Indonesia.`,
-  `I specialize in building and maintaining backend systems using technologies such as Node.js, Express.js, PostgreSQL, Redis, and Kafka. My work mainly focuses on designing APIs, debugging production issues, and improving system reliability in distributed environments.`,
-  `My professional experience includes working on high-availability systems for digital document services and e-commerce platforms, where I handled critical incidents, optimized database queries, and stabilized backend services across development, staging, and production environments.`,
-  `Currently, I also work as a freelance full-stack developer, building and improving manufacturing reporting systems using Nuxt.js, Laravel, and Microsoft SQL Server. My role involves translating operational requirements into technical implementations and delivering features that support real-world factory workflows.`,
-  `My journey into software engineering started as a self-taught developer, where I spent over a year intensively learning web development fundamentals and backend architecture before entering the industry professionally.`,
-  `Through this blog, I share what I learn about backend engineering, system design, debugging strategies, and modern web development.`,
-  `Outside of coding, I'm interested in continuous learning, building personal projects, and exploring better ways to design reliable software systems.`
-]
+const { data: about } = await useFetch<{
+  id: string
+  content: string
+  image_url: string
+}>('/api/about')
+
+const paragraphs = computed(() => {
+  if (!about.value?.content) return []
+  // Strip HTML tags and split by paragraphs
+  const text = about.value.content.replace(/<\/p>/g, '\n').replace(/<[^>]*>/g, '').trim()
+  return text.split('\n').filter(p => p.trim())
+})
 </script>
 
 <template>
@@ -20,7 +23,7 @@ const paragraphs = [
       }"
     />
 
-    <div class="flex flex-col lg:flex-row gap-6 mt-4">
+    <div v-if="about" class="flex flex-col lg:flex-row gap-6 mt-4">
       <div class="w-full lg:w-1/2">
         <p
           v-for="(para, index) in paragraphs"
@@ -34,7 +37,7 @@ const paragraphs = [
       <!-- Image (right on desktop, top on mobile) -->
       <div class="w-full lg:w-1/2 flex justify-center items-start">
         <NuxtImg
-          src="/profile_1.png"
+          :src="about.image_url"
           loading="lazy"
           width="400"
           class="w-full max-w-xs sm:max-w-sm lg:max-w-md rounded-xl"

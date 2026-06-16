@@ -6,26 +6,17 @@ definePageMeta({
 })
 
 type Blogs = {
+    id: string
     title: string
     description: string
-    content: string
     slug: string
     status: 'published' | 'draft'
     date: string
 }
 
-const toast = useToast()
+const { data: posts, refresh } = await useFetch<Blogs[]>('/api/blogs')
 
-const posts = ref<Blogs[]>([
-  {
-    title: 'Building Scalable APIs with Node.js and PostgreSQL',
-    slug: 'building-scalable-apis-with-nodejs-and-postgresql',
-    description: `Learn best practices for designing and implementing scalable REST APIs using Node.js, Express, and PostgreSQL. We'll cover database design, caching strategies, and performance optimization.`,
-    content: 'Lorem ipsum dolor sit amet',
-    status: 'published',
-    date: '2026-03-11',
-  },
-])
+const toast = useToast()
 
 const columns: TableColumn<Blogs>[] = [
     {
@@ -57,7 +48,6 @@ const columns: TableColumn<Blogs>[] = [
 
 const capitalize = (word: string) => {
     if (!word) return word
-
     return word.charAt(0).toUpperCase() + word.slice(1)
 }
 
@@ -66,8 +56,13 @@ const toEdit = async (slug: string) => {
 }
 
 const deleteItem = async (slug: string) => {
-    toast.add({ title: 'Success', description: 'Item deleted successfully', color: 'success' })
-    console.log("Deleted post: ", slug)
+  try {
+    await $fetch(`/api/blogs/${slug}`, { method: 'DELETE' })
+    toast.add({ title: 'Success', description: 'Post deleted successfully', color: 'success' })
+    refresh()
+  } catch (err: any) {
+    toast.add({ title: 'Failed', description: err.message || 'Something went wrong', color: 'error' })
+  }
 }
 </script>
 
@@ -92,7 +87,7 @@ const deleteItem = async (slug: string) => {
 
         <UCard>
             <UTable
-                :data="posts"
+                :data="posts ?? []"
                 :columns="columns"
                 class="flex-1"
             >

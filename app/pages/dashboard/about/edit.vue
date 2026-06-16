@@ -71,6 +71,13 @@ const items = [
   ]
 ] satisfies EditorToolbarItem[][]
 
+// Fetch current about data
+const { data: aboutData } = await useFetch<{
+  id: string
+  content: string
+  image_url: string
+}>('/api/about')
+
 const schema = z.object({
     about: z.string(),
     image: z
@@ -82,10 +89,9 @@ const schema = z.object({
             ).optional()
 })
 
-// fetch data example
-const data  = {
-    about: `<p>Hi, I'm Naufal Hafizh Nugraha, a fullstack developer based in Indonesia.</p><p>I specialize in building and maintaining backend systems using technologies such as Node.js, Express.js, PostgreSQL, Redis, and Kafka. My work mainly focuses on designing APIs, debugging production issues, and improving system reliability in distributed environments.</p><p>My professional experience includes working on high-availability systems for digital document services and e-commerce platforms, where I handled critical incidents, optimized database queries, and stabilized backend services across development, staging, and production environments.</p><p>Currently, I also work as a freelance full-stack developer, building and improving manufacturing reporting systems using Nuxt.js, Laravel, and Microsoft SQL Server. My role involves translating operational requirements into technical implementations and delivering features that support real-world factory workflows.</p><p>My journey into software engineering started as a self-taught developer, where I spent over a year intensively learning web development fundamentals and backend architecture before entering the industry professionally.</p><p>Through this blog, I share what I learn about backend engineering, system design, debugging strategies, and modern web development.</p><p>Outside of coding, I'm interested in continuous learning, building personal projects, and exploring better ways to design reliable software systems.</p>`,
-    imgPath: '/profile_1.png'
+const data = {
+    about: aboutData.value?.content || '',
+    imgPath: aboutData.value?.image_url || '/profile_1.png'
 }
 
 const imagePreview = ref<string | null>(data.imgPath)
@@ -98,12 +104,25 @@ const state = reactive<Partial<Schema>>({
 })
 
 const toast = useToast()
+const loading = ref(false)
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-    toast.add({ title: 'Success', description: 'The form has been submitted.', color: 'success' })
-    console.log(event.data)
-
+  loading.value = true
+  try {
+    await $fetch('/api/about', {
+      method: 'PUT',
+      body: {
+        content: event.data.about,
+        image_url: data.imgPath // keep existing image for now
+      }
+    })
+    toast.add({ title: 'Success', description: 'About page updated successfully', color: 'success' })
     await navigateTo('/dashboard/about')
+  } catch (err: any) {
+    toast.add({ title: 'Failed', description: err.message || 'Something went wrong', color: 'error' })
+  } finally {
+    loading.value = false
+  }
 }
 
 const createObjUrl = (file: File): string => {
@@ -208,6 +227,7 @@ watch(() => state.image, (file) => {
                     class="max-w-20 justify-center"
                     color="neutral"
                     size="xl"
+                    :loading="loading"
                 >
                     Submit
                 </UButton>

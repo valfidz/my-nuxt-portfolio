@@ -5,15 +5,22 @@ definePageMeta({
     layout: 'main'
 })
 
+const { data: posts } = await useFetch<{
+  id: string
+  title: string
+  slug: string
+  description: string
+  date: string
+}[]>('/api/blogs')
 
-const posts = ref<BlogPostProps[]>([
-  {
-    title: 'Building Scalable APIs with Node.js and PostgreSQL',
-    description: `Learn best practices for designing and implementing scalable REST APIs using Node.js, Express, and PostgreSQL. We'll cover database design, caching strategies, and performance optimization.`,
-    date: '2026-03-11',
-    to: '/blog/building-scalable-apis-with-nodejs-and-postgreqsql'
-  },
-])
+const blogPosts = computed<BlogPostProps[]>(() => {
+  return (posts.value ?? []).map(p => ({
+    title: p.title,
+    description: p.description,
+    date: p.date,
+    to: `/blog/${p.slug}`
+  }))
+})
 </script>
 
 <template>
@@ -30,7 +37,7 @@ const posts = ref<BlogPostProps[]>([
             <UContainer>
                 <UBlogPosts orientation="vertical">
                     <UBlogPost
-                        v-for="(post, index) in posts"
+                        v-for="(post, index) in blogPosts"
                         :key="index"
                         v-bind="post"
                         :to="post.to"

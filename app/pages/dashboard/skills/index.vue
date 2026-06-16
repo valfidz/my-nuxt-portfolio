@@ -11,56 +11,7 @@ type Skills = {
     stacks: string[]
 }
 
-const skills = ref<Skills[]>([
-  {
-    id: '1',
-    title: 'Backend Development',
-    stacks: [
-      'Node.js',
-      'Express.js',
-      'PostgreSQL',
-      'Laravel',
-      'Redis',
-      'Docker',
-      'Supabase',
-      'Google Cloud Platform'
-    ]
-  },
-  {
-    id: '2',
-    title: 'Frontend Development',
-    stacks: [
-      'HTML',
-      'CSS',
-      'Javascript',
-      'React.js',
-      'Vue.js',
-      'Nuxt.js'
-    ]
-  },
-  {
-    id: '3',
-    title: 'Tools & Technologies',
-    stacks: [
-      'Git',
-      'Linux',
-      'CI/CD',
-      'Microservices',
-      'Rest APIs',
-      'Testing'
-    ]
-  },
-  {
-    id: '4',
-    title: 'Soft Skills',
-    stacks: [
-      'Problem Solving',
-      'Team Collaboration',
-      'Code Review',
-      'Agile Development'
-    ]
-  }
-])
+const { data: skills, refresh } = await useFetch<Skills[]>('/api/skills')
 
 const columns: TableColumn<Skills>[] = [
     {
@@ -79,7 +30,6 @@ const columns: TableColumn<Skills>[] = [
 
 const formatArray = (item: string[]) => {
   const stack = item.join(', ')
-
   return stack
 }
 
@@ -90,8 +40,13 @@ const toEdit = async (id: string) => {
 const toast = useToast()
 
 const deleteItem = async (id: string) => {
+  try {
+    await $fetch(`/api/skills/${id}`, { method: 'DELETE' })
     toast.add({ title: 'Success', description: 'Item deleted successfully', color: 'success' })
-    console.log("Deleted id: ", id)
+    refresh()
+  } catch (err: any) {
+    toast.add({ title: 'Failed', description: err.message || 'Something went wrong', color: 'error' })
+  }
 }
 </script>
 
@@ -116,7 +71,7 @@ const deleteItem = async (id: string) => {
 
         <UCard>
           <UTable
-            :data="skills"
+            :data="skills ?? []"
             :columns="columns"
             class="flex-1"
           >

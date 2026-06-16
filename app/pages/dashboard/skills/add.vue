@@ -19,22 +19,29 @@ const state = reactive<Partial<Schema>>({
 })
 
 const toast = useToast()
+const loading = ref(false)
 
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-    toast.add({ title: 'Success', description: 'Form has been submitted', color: 'success' })
-    console.log(event.data)
-
-    state.title = undefined
-    state.stacks = undefined
-
+  loading.value = true
+  try {
+    await $fetch('/api/skills', {
+      method: 'POST',
+      body: event.data
+    })
+    toast.add({ title: 'Success', description: 'Skill created successfully', color: 'success' })
     await navigateTo('/dashboard/skills')
+  } catch (err: any) {
+    toast.add({ title: 'Failed', description: err.message || 'Something went wrong', color: 'error' })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
     <UContainer>
         <UButton
-            label="Back to Projects"
+            label="Back to Skills"
             icon="i-lucide-arrow-left"
             color="neutral"
             variant="ghost"
@@ -80,6 +87,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
                     class="max-w-20 justify-center"
                     color="neutral"
                     size="xl"
+                    :loading="loading"
                 >
                     Submit
                 </UButton>

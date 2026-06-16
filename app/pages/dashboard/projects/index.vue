@@ -13,54 +13,7 @@ type Projects = {
     link: string
 }
 
-const projects = ref<Projects[]> ([
-  {
-    id: '1',
-    title: 'Simple World Map',
-    stacks: [
-      'Bun',
-      'Javascript',
-      'Svelte',
-      'Sveltekit',
-      'Supabase',
-      'Leaflet'
-    ],
-    description: 'Simple world map built by svelte and supabase',
-    link: 'https://github.com/valfidz/geo-map'
-  },
-  {
-    id: '2',
-    title: 'Pipopa Landing Page',
-    stacks: [
-      'Javascript',
-      'React.js',
-    ],
-    description: 'Landing page for Pipopa company profile built by React.js',
-    link: 'https://github.com/valfidz/pipopa-fe/tree/production'
-  },
-  {
-    id: '3',
-    title: 'Pipopa Dashboard',
-    stacks: [
-      'Javascript',
-      'React.js',
-    ],
-    description: 'Dashboard for Pipopa company profile built by React.js',
-    link: 'https://github.com/valfidz/admin-compro-cra-pipopa/tree/production'
-  },
-  {
-    id: '4',
-    title: 'Pipopa Backend',
-    stacks: [
-      'Javascript',
-      'Node.js',
-      'Express.js',
-      'MySQL'
-    ],
-    description: 'Backend API for Pipopa company profile built by Express.js and MySQL',
-    link: 'https://github.com/valfidz/pipopa-be/tree/production'
-  },
-])
+const { data: projects, refresh } = await useFetch<Projects[]>('/api/projects')
 
 const columns: TableColumn<Projects>[] = [
     {
@@ -84,8 +37,14 @@ const toEdit = async (id: string) => {
 const toast = useToast()
 
 const deleteItem = async (id: string) => {
+  try {
+    const { error } = await $fetch(`/api/projects/${id}`, { method: 'DELETE' })
+    if (error) throw new Error(error)
     toast.add({ title: 'Success', description: 'Item deleted successfully', color: 'success' })
-    console.log("Deleted id: ", id)
+    refresh()
+  } catch (err: any) {
+    toast.add({ title: 'Failed', description: err.message || 'Something went wrong', color: 'error' })
+  }
 }
 
 </script>
@@ -111,7 +70,7 @@ const deleteItem = async (id: string) => {
 
         <UCard>
             <UTable
-                :data="projects"
+                :data="projects ?? []"
                 :columns="columns"
                 class="flex-1"
             >

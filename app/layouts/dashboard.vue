@@ -2,6 +2,7 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const supabase = useSupabaseClient()
+const user = useSupabaseUser()
 
 const items: NavigationMenuItem[] = [{
   label: 'Home',
@@ -27,7 +28,10 @@ const items: NavigationMenuItem[] = [{
 
 const signOut = async () => {
     const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    if (error) {
+      alert(error.message)
+      return
+    }
 
     alert('Sign Out Success!')
     navigateTo('/')
@@ -59,8 +63,11 @@ const signOut = async () => {
 
         <template #footer="{ collapsed }">
             <UButton
-                :avatar="{ src: 'https://github.com/benjamincanac.png', loading: 'lazy' as const }"
-                :label="collapsed ? undefined : 'Benjamin'"
+                :avatar="{
+                  src: user?.user_metadata?.avatar_url || `https://api.dicebear.com/9.x/initials/svg?seed=${user?.email || 'User'}`,
+                  loading: 'lazy' as const
+                }"
+                :label="collapsed ? undefined : (user?.user_metadata?.full_name || user?.email || 'User')"
                 color="neutral"
                 variant="ghost"
                 class="w-full"

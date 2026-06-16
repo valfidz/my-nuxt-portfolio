@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const link = 'https://bit.ly/CV-Softdev"'
+const link = 'https://bit.ly/CV-Softdev'
 </script>
 
 <template>

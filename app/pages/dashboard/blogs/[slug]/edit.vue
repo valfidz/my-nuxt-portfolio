@@ -11,6 +11,7 @@ definePageMeta({
 const route = useRoute()
 
 type Blogs = {
+    id: string
     title: string
     description: string
     content: string
@@ -19,24 +20,9 @@ type Blogs = {
     date: string
 }
 
-const posts = ref<Blogs[]>([
-  {
-    title: 'Building Scalable APIs with Node.js and PostgreSQL',
-    slug: 'building-scalable-apis-with-nodejs-and-postgresql',
-    description: `Learn best practices for designing and implementing scalable REST APIs using Node.js, Express, and PostgreSQL. We'll cover database design, caching strategies, and performance optimization.`,
-    content: 'Lorem ipsum dolor sit amet',
-    status: 'published',
-    date: '2026-03-11',
-  },
-])
+const pageSlug = route.params.slug as string
 
-const pageSlug = route.params.slug ? route.params.slug : null
-const currentPost = posts.value.find(post => post.slug === pageSlug)
-
-if (!currentPost) {
-    await navigateTo('/dashboard/blogs')
-    throw new Error('Post not found')
-}
+const { data: post } = await useFetch<Blogs>(`/api/blogs/${pageSlug}`)
 
 const editorItems = [
   [
@@ -145,7 +131,7 @@ type Schema = z.output<typeof schema>
 const df = new DateFormatter('en-US', {
   dateStyle: 'medium'
 })
-const postDate = new Date(currentPost.date)
+const postDate = post.value ? new Date(post.value.date) : new Date()
 
 const toast = useToast()
 const radioItems = ref<RadioGroupItem[]>([
@@ -158,29 +144,33 @@ const radioItems = ref<RadioGroupItem[]>([
         id: 'published'
     }
 ])
-const radioValue = ref(currentPost?.status)
-const modelValue = shallowRef(new CalendarDate(postDate.getFullYear(), postDate.getMonth() + 1, postDate.getDate()))
+const radioValue = ref(post.value?.status || 'draft')
+const modelValue = shallowRef(post.value ? new CalendarDate(postDate.getFullYear(), postDate.getMonth() + 1, postDate.getDate()) : new CalendarDate(new Date().getFullYear(), new Date().getMonth() + 1, new Date().getDate()))
 
 const state = reactive<Partial<Schema>>({
-    title: currentPost?.title,
-    description: currentPost?.description,
-    content: currentPost?.content,
+    title: post.value?.title,
+    description: post.value?.description,
+    content: post.value?.content,
     status: radioValue.value,
     date: modelValue.value.toString()
 })
 
+const loading = ref(false)
+
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-    toast.add({ title: 'Success', description: 'Form has been submitted', color: 'success' })
-    console.log(event.data)
-
-    state.title = undefined
-    state.description = undefined
-    state.content = undefined
-    state.status = radioValue.value
-    state.date = new CalendarDate(postDate.getFullYear(), postDate.getMonth() + 1, postDate.getDate()).toString()
-    modelValue.value = new CalendarDate(postDate.getFullYear(), postDate.getMonth() + 1, postDate.getDate())
-
+  loading.value = true
+  try {
+    await $fetch(`/api/blogs/${pageSlug}`, {
+      method: 'PUT',
+      body: event.data
+    })
+    toast.add({ title: 'Success', description: 'Post updated successfully', color: 'success' })
     await navigateTo('/dashboard/blogs')
+  } catch (err: any) {
+    toast.add({ title: 'Failed', description: err.message || 'Something went wrong', color: 'error' })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -205,7 +195,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
             }"
         />
 
-        <UCard class="mb-20">
+        <UCard class="mb-20" v-if="post">
             <UForm
                 :schema="schema"
                 :state="state"
@@ -282,6 +272,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
                     class="max-w-20 justify-center"
                     color="neutral"
                     size="xl"
+                    :loading="loading"
                 >
                     Submit
                 </UButton>
