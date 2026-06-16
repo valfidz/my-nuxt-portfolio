@@ -71,7 +71,6 @@ const items = [
   ]
 ] satisfies EditorToolbarItem[][]
 
-// Fetch current about data
 const { data: aboutData } = await useFetch<{
   id: string
   content: string
@@ -113,7 +112,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       method: 'PUT',
       body: {
         content: event.data.about,
-        image_url: data.imgPath // keep existing image for now
+        image_url: data.imgPath
       }
     })
     toast.add({ title: 'Success', description: 'About page updated successfully', color: 'success' })
@@ -152,34 +151,39 @@ watch(() => state.image, (file) => {
 
         <UPageHeader
             title="Edit About"
+            description="Update your personal information and profile image"
             :ui="{
                 root: 'border-b-0'
             }"
         />
 
-        <UCard class="mb-20">
+        <UCard class="mb-20 animate-scale-in">
             <UForm
                 :schema="schema"
                 :state="state"
                 @submit="onSubmit"
-                class="flex flex-col gap-6"
+                class="flex flex-col gap-8"
             >
+                <!-- About Content -->
                 <UFormField label="About" name="about" :ui="{ label: 'text-2xl font-semibold' }">
-                    <UEditor
-                        v-slot="{ editor }"
-                        v-model="state.about"
-                        content-type="html"
-                        :ui="{ base: 'p-8 sm:px-16' }"
-                        class="w-full min-h-74"
-                    >
-                        <UEditorToolbar
-                            :editor="editor"
-                            :items="items"
-                            class="border-b border-muted py-2 px-8 sm:px-16 overflow-x-auto"
-                        />
-                    </UEditor>
+                    <div class="w-full border border-default rounded-lg overflow-hidden">
+                      <UEditor
+                          v-slot="{ editor }"
+                          v-model="state.about"
+                          content-type="html"
+                          :ui="{ base: 'p-8 sm:px-16 min-h-96' }"
+                          class="w-full"
+                      >
+                          <UEditorToolbar
+                              :editor="editor"
+                              :items="items"
+                              class="border-b border-muted py-2 px-8 sm:px-16 overflow-x-auto bg-muted/20 sticky top-0 z-10"
+                          />
+                      </UEditor>
+                    </div>
                 </UFormField>
 
+                <!-- Image -->
                 <UFormField label="Image" name="image" :ui="{ label: 'text-2xl font-semibold' }">
                     <UFileUpload
                         size="xl"
@@ -189,16 +193,16 @@ watch(() => state.image, (file) => {
                         v-slot="{ open, removeFile }"
                         v-model="state.image"
                         accept="image/jpeg,image/png,image/webp"
+                        class="w-full"
                     >
-                        <!-- Show current/new image preview -->
                         <img
                             v-if="imagePreview"
                             :src="imagePreview"
-                            class="w-100 h-100 object-cover rounded-lg border border-default"
+                            class="w-48 h-48 object-cover rounded-lg border border-default mx-auto"
                             alt="Profile Image"
                         />
 
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 justify-center mt-4">
                             <UButton
                                 :label="state.image ? 'Change image' : 'Upload new image'"
                                 color="neutral"
@@ -216,21 +220,23 @@ watch(() => state.image, (file) => {
                             />
                         </div>
 
-                        <p v-if="state.image" class="text-xs text-muted">
+                        <p v-if="state.image" class="text-xs text-muted text-center mt-2">
                             {{ state.image.name }}
                         </p>
                     </UFileUpload>
                 </UFormField>
 
-                <UButton
-                    type="submit"
-                    class="max-w-20 justify-center"
-                    color="neutral"
-                    size="xl"
-                    :loading="loading"
-                >
-                    Submit
-                </UButton>
+                <div class="flex justify-end pt-4 border-t border-default">
+                  <UButton
+                      type="submit"
+                      color="neutral"
+                      size="xl"
+                      :loading="loading"
+                      class="px-8"
+                  >
+                      Save Changes
+                  </UButton>
+                </div>
             </UForm>
         </UCard>
     </UContainer>

@@ -9,20 +9,17 @@ definePageMeta({
 })
 
 const route = useRoute()
-
-type Blogs = {
-    id: string
-    title: string
-    description: string
-    content: string
-    slug: string
-    status: 'published' | 'draft'
-    date: string
-}
-
 const pageSlug = route.params.slug as string
 
-const { data: post } = await useFetch<Blogs>(`/api/blogs/${pageSlug}`)
+const { data: post } = await useFetch<{
+  id: string
+  title: string
+  description: string
+  content: string
+  slug: string
+  status: 'published' | 'draft'
+  date: string
+}>(`/api/blogs/${pageSlug}`)
 
 const editorItems = [
   [
@@ -190,92 +187,103 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
 
         <UPageHeader
             title="Edit Post"
+            description="Update your blog article"
             :ui="{
                 root: 'border-b-0'
             }"
         />
 
-        <UCard class="mb-20" v-if="post">
+        <UCard class="mb-20 animate-scale-in" v-if="post">
             <UForm
                 :schema="schema"
                 :state="state"
                 @submit="onSubmit"
                 class="flex flex-col gap-8"
             >
-                <UFormField label="Title" name="title" :ui="{ label: 'text-2xl font-semibold' }">
-                    <UInput
-                        class="w-full"
-                        size="xl"
-                        v-model="state.title"
-                    />
-                </UFormField>
+                <!-- Title + Meta row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <UFormField label="Title" name="title" class="lg:col-span-2" :ui="{ label: 'text-2xl font-semibold' }">
+                      <UInput
+                          class="w-full"
+                          size="xl"
+                          v-model="state.title"
+                      />
+                  </UFormField>
 
-                <UFormField label="Status" name="status" :ui="{ label: 'text-2xl font-semibold' }">
-                    <URadioGroup
-                        orientation="horizontal"
-                        variant="list"
-                        v-model="radioValue"
-                        value-key="id"
-                        :items="radioItems"
-                    />
-                </UFormField>
+                  <div class="space-y-6">
+                    <UFormField label="Status" name="status" :ui="{ label: 'font-semibold' }">
+                        <URadioGroup
+                            orientation="horizontal"
+                            variant="list"
+                            v-model="radioValue"
+                            value-key="id"
+                            :items="radioItems"
+                        />
+                    </UFormField>
 
-                <UFormField label="Date" name="date" :ui="{ label: 'text-2xl font-semibold' }">
-                    <UPopover>
-                        <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
-                            {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : 'Select a date' }}
-                        </UButton>
+                    <UFormField label="Date" name="date" :ui="{ label: 'font-semibold' }">
+                        <UPopover>
+                            <UButton color="neutral" variant="subtle" icon="i-lucide-calendar" class="w-full justify-start">
+                                {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : 'Select a date' }}
+                            </UButton>
 
-                        <template #content>
-                            <UCalendar
-                                v-model="modelValue"
-                                class="p-2"
-                                disabled
-                                size="xl"
-                                @update:model-value="(val) => state.date = val ? val.toString() : undefined"
-                            />
-                        </template>
-                    </UPopover>
-                </UFormField>
+                            <template #content>
+                                <UCalendar
+                                    v-model="modelValue"
+                                    class="p-2"
+                                    size="xl"
+                                    @update:model-value="(val) => state.date = val ? val.toString() : undefined"
+                                />
+                            </template>
+                        </UPopover>
+                    </UFormField>
+                  </div>
+                </div>
 
-                <UFormField label="Description" name="description" :ui="{ label: 'text-2xl font-semibold' }">
+                <!-- Description -->
+                <UFormField label="Excerpt" name="description" :ui="{ label: 'text-2xl font-semibold' }">
                     <UTextarea
                         class="w-full"
-                        :rows="6"
+                        :rows="4"
                         v-model="state.description"
                     />
                 </UFormField>
 
+                <!-- Content (Tiptap Editor) -->
                 <UFormField label="Content" name="content" :ui="{ label: 'text-2xl font-semibold' }">
-                    <UEditor
-                        v-slot="{ editor }"
-                        v-model="state.content"
-                        content-type="html"
-                        :extensions="[
-                            TextAlign.configure({
-                                types: ['heading', 'paragraph']
-                            })
-                        ]"
-                        :ui="{ base: 'p-8 sm:px-16' }"
-                        class="w-full min-h-74 border border-accented"
-                    >
-                        <UEditorToolbar
-                            :editor="editor"
-                            :items="editorItems"
-                            class="border-b border-muted py-2 px-8 sm:px-16 overflow-x-auto"
-                        />
-                    </UEditor>
+                    <div class="w-full border border-default rounded-lg overflow-hidden">
+                      <UEditor
+                          v-slot="{ editor }"
+                          v-model="state.content"
+                          content-type="html"
+                          :extensions="[
+                              TextAlign.configure({
+                                  types: ['heading', 'paragraph']
+                              })
+                          ]"
+                          :ui="{ base: 'p-8 sm:px-16 min-h-96' }"
+                          class="w-full"
+                      >
+                          <UEditorToolbar
+                              :editor="editor"
+                              :items="editorItems"
+                              class="border-b border-muted py-2 px-8 sm:px-16 overflow-x-auto bg-muted/20 sticky top-0 z-10"
+                          />
+                      </UEditor>
+                    </div>
                 </UFormField>
 
-                <UButton
-                    type="submit"
-                    class="max-w-20 justify-center"
-                    color="neutral"
-                    size="xl"
-                    :loading="loading"
-                >
-                    Submit
-                </UButton>
+                <div class="flex justify-end pt-4 border-t border-default">
+                  <UButton
+                      type="submit"
+                      color="neutral"
+                      size="xl"
+                      :loading="loading"
+                      class="px-8"
+                  >
+                      Update Post
+                  </UButton>
+                </div>
             </UForm>
         </UCard>
     </UContainer>

@@ -2,98 +2,67 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const route = useRoute()
+const { scrolled } = useScrollHeader()
 
 const items = computed<NavigationMenuItem[]>(() => [
-  {
-    label: 'About',
-    to: '#about',
-  },
-  {
-    label: 'Projects',
-    to: '#projects',
-  },
-  {
-    label: 'Skills',
-    to: '#skills',
-  },
-  {
-    label: 'Blog',
-    to: '/blog',
-    target: '_blank'
-  },
-  {
-    label: 'Contact',
-    to: '#contact',
-  },
+  { label: 'About', to: '/#about' },
+  { label: 'Skills', to: '/#skills' },
+  { label: 'Projects', to: '/#projects' },
+  { label: 'Blog', to: '/blog', target: '_blank' },
+  { label: 'Contact', to: '/#contact' },
 ])
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col">
-    <UHeader>
-      <template #title>
-        <h1 class="text-xl font-bold tracking-wide">VALCODE</h1>
-      </template>
-  
-      <!-- Desktop nav (center slot, hidden on mobile by default) -->
-      <UNavigationMenu :items="items" />
-  
-      <template #right>
+    <!-- Fixed header with blur -->
+    <nav
+      :class="[
+        'fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 transition-all duration-300',
+        scrolled ? 'header-blur border-b border-[var(--ui-border)]' : 'bg-transparent'
+      ]"
+    >
+      <span class="gradient-text font-bold text-xl tracking-tight">
+        <NuxtLink to="/">
+          VALCODE
+        </NuxtLink>
+      </span>
+
+      <ul class="hidden md:flex items-center gap-8 list-none">
+        <li v-for="item in items" :key="item.label">
+          <NuxtLink
+            :to="item.to"
+            :target="item.target"
+            class="text-sm font-medium text-[var(--ui-text-dim)] hover:text-[var(--ui-text)] transition-colors relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-0.5 after:bg-[var(--ui-primary)] after:transition-all after:duration-300 hover:after:w-full"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </li>
+      </ul>
+
+      <div class="flex items-center gap-2">
         <UColorModeButton />
-        <UTooltip text="Open on GitHub" :kbds="['meta', 'G']">
+        <UTooltip text="GitHub" :kbds="['meta', 'G']">
           <UButton
             color="neutral"
             variant="ghost"
+            icon="i-simple-icons-github"
             to="https://github.com/valfidz"
             target="_blank"
-            icon="i-simple-icons-github"
             aria-label="GitHub"
           />
         </UTooltip>
-      </template>
-  
-      <!-- Mobile nav (shown inside the toggle menu) -->
-      <template #body>
-        <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
-      </template>
-    </UHeader>
-  
+      </div>
+    </nav>
+
     <main class="flex-1">
       <slot />
     </main>
-  
-    <UFooter class="mt-10">
-      <template #left>
-        <p class="text-muted text-sm">
-          Copyright © {{ new Date().getFullYear() }}
-        </p>
-      </template>
-      <template #right>
-        <UButton
-          icon="i-simple-icons-discord"
-          color="neutral"
-          variant="ghost"
-          to="https://discord.com/noparufizu"
-          target="_blank"
-          aria-label="Discord"
-        />
-        <UButton
-          icon="i-simple-icons-x"
-          color="neutral"
-          variant="ghost"
-          to="https://x.com/valfidz"
-          target="_blank"
-          aria-label="X"
-        />
-        <UButton
-          icon="i-simple-icons-github"
-          color="neutral"
-          variant="ghost"
-          to="https://github.com/valfidz"
-          target="_blank"
-          aria-label="GitHub"
-        />
-      </template>
-    </UFooter>
+
+    <footer class="text-center py-6 border-t border-[var(--ui-border)]">
+      <p class="text-xs text-[var(--ui-text-dim)]">
+        Copyright © {{ new Date().getFullYear() }} VALCODE
+      </p>
+    </footer>
   </div>
 </template>

@@ -5,11 +5,12 @@ definePageMeta({
 </script>
 
 <template>
+    <MainParticles />
     <UContainer>
         <MainPageHeader />
         <MainAbout />
-        <MainProject />
         <MainSkills />
+        <MainProject />
         <MainBlog />
         <MainContact />
     </UContainer>

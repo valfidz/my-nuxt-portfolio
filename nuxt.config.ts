@@ -17,7 +17,13 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/login',
       callback: '',
-      exclude: ['/register', '/', '/blog', '/blog/*'], // routes that don't require auth
+      exclude: ['/register', '/', '/blog', '/blog/*'],
+    }
+  },
+  ui: {
+    colors: {
+      primary: 'amber',
+      neutral: 'zinc'
     }
   }
 })

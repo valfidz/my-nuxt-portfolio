@@ -27,7 +27,6 @@ const formattedDate = computed(() => {
     })
 })
 
-// Set up custom renderer BEFORE parsedContent so headings get IDs
 const renderer = new marked.Renderer()
 renderer.heading = ({ text, depth }: { text: string, depth: number }) => {
   const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
@@ -41,7 +40,6 @@ const parsedContent = computed(() => {
   return marked(content)
 })
 
-// Generate TOC links from markdown headings
 const tocLinks = computed<ContentTocLink[]>(() => {
   const content = post.value?.content
   if (!content) return []
@@ -77,13 +75,12 @@ const tocLinks = computed<ContentTocLink[]>(() => {
   return links
 })
 
-// Mobile TOC accordion state
 const tocOpen = ref(false)
 </script>
 
 <template>
   <UPage>
-    <UContainer class="mt-10 pb-16">
+    <UContainer class="mt-10 pb-16 animate-fade-in-up">
 
       <UButton
         icon="i-lucide-arrow-left"
@@ -94,25 +91,68 @@ const tocOpen = ref(false)
         to="/blog"
       />
 
-      <!-- Meta row -->
-      <div class="mt-6 flex flex-row gap-6">
-        <div class="flex flex-row gap-2 items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-          <p>{{ formattedDate }}</p>
+      <div v-if="post">
+        <!-- Meta row -->
+        <div class="mt-6 flex flex-row gap-6 items-center">
+          <div class="flex flex-row gap-2 items-center">
+            <Icon name="i-lucide-calendar" class="text-muted" />
+            <p class="text-muted text-sm">{{ formattedDate }}</p>
+          </div>
         </div>
+
+        <UPageHeader
+          :title="post.title"
+          :description="post.description"
+          :ui="{ root: 'border-b-0' }"
+        />
+
+        <!-- Mobile TOC accordion -->
+        <div v-if="tocLinks.length" class="lg:hidden mt-6 border border-default rounded-lg overflow-hidden">
+          <button
+            class="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold bg-muted/40 hover:bg-muted/70 transition-colors"
+            @click="tocOpen = !tocOpen"
+          >
+            <span>On this page</span>
+            <Icon
+              name="i-lucide-chevron-down"
+              :class="['transition-transform duration-200', tocOpen ? 'rotate-180' : '']"
+            />
+          </button>
+          <div v-if="tocOpen" class="px-4 py-3 border-t border-default">
+            <ul class="space-y-1 border-l border-default">
+              <template v-for="link in tocLinks" :key="link.id">
+                <li>
+                  <a
+                    :href="`#${link.id}`"
+                    class="block text-sm text-muted hover:text-default transition-colors py-1 pl-4"
+                    @click="tocOpen = false"
+                  >
+                    {{ link.text }}
+                  </a>
+                </li>
+                <li v-for="child in link.children" :key="child.id">
+                  <a
+                    :href="`#${child.id}`"
+                    class="block text-sm text-muted hover:text-default transition-colors py-1 pl-7"
+                    @click="tocOpen = false"
+                  >
+                    {{ child.text }}
+                  </a>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Article content -->
+        <div class="prose prose-neutral dark:prose-invert max-w-none mt-8" v-html="parsedContent" />
       </div>
 
-      <UPageHeader
-        :title="post?.title"
-        :ui="{ root: 'border-b-0' }"
-      />
-
-      <!-- Article content -->
-      <div class="prose prose-neutral dark:prose-invert max-w-none mt-8" v-html="parsedContent" />
-
+      <div v-else class="flex justify-center mt-20">
+        <p class="text-muted animate-pulse-soft">Loading post...</p>
+      </div>
     </UContainer>
 
-    <!-- Desktop sticky TOC in right slot (shown on lg+) -->
     <template v-if="tocLinks.length" #right>
       <div class="sticky top-[calc(var(--ui-header-height,64px)+2rem)] max-h-[calc(100vh-var(--ui-header-height,64px)-4rem)] overflow-y-auto space-y-2 hidden lg:block">
         <p class="text-sm font-semibold">On this page</p>
@@ -138,6 +178,5 @@ const tocOpen = ref(false)
         </ul>
       </div>
     </template>
-
   </UPage>
 </template>
