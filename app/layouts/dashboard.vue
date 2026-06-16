@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui'
 
+const supabase = useSupabaseClient()
+
 const items: NavigationMenuItem[] = [{
   label: 'Home',
   icon: 'i-lucide-house',
@@ -22,6 +24,14 @@ const items: NavigationMenuItem[] = [{
     icon: 'i-lucide-rss',
     to: '/dashboard/blogs'
 }]
+
+const signOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+
+    alert('Sign Out Success!')
+    navigateTo('/')
+}
 </script>
 
 <template>
@@ -60,6 +70,7 @@ const items: NavigationMenuItem[] = [{
                 label="Logout"
                 size="sm"
                 color="neutral"
+                @click="signOut"
             />
         </template>
         </UDashboardSidebar>

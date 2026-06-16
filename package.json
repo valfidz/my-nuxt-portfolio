@@ -13,6 +13,8 @@
     "@nuxt/content": "^3.12.0",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.5.1",
+    "@nuxtjs/supabase": "^2.0.6",
+    "@supabase/supabase-js": "^2.105.1",
     "@tailwindcss/vite": "^4.2.1",
     "@tiptap/extension-text-align": "^3.22.3",
     "dompurify": "^3.3.2",
@@ -20,7 +22,8 @@
     "nuxt": "^4.3.1",
     "tailwindcss": "^4.2.1",
     "vue": "^3.5.29",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.95",
