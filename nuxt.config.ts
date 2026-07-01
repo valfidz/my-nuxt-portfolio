@@ -5,8 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   app: {
     head: {
-      title: 'VALCODE',
-      titleTemplate: '%s %separator VALCODE'
+      title: 'VALCODE'
     }
   },
   devtools: { enabled: true },
